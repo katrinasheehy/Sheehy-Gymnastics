@@ -17,20 +17,12 @@ def load_data():
 
 df = load_data()
 
-# --- 3. Persistent App-Wide CSS (Sticky Tabs) ---
+# --- 3. App-Wide CSS (Fixed for Mobile Visibility) ---
 st.markdown("""
     <style>
     h1 { white-space: nowrap; font-size: 1.6rem !important; overflow: hidden; margin-bottom: 5px; }
     
-    /* Sticky Header Logic */
-    div[data-testid="stTabs"] {
-        position: sticky;
-        top: 0;
-        background-color: white;
-        z-index: 999;
-        padding-top: 10px;
-    }
-
+    /* Clean Tab Styling (Removed Sticky to fix mobile box issue) */
     [data-testid="stTabSelectionData"] { display: none !important; }
     hr { display: none !important; }
     
@@ -59,13 +51,12 @@ def show_gymnast_tab(name, color, events):
     selected_meet = st.selectbox("📅 Select Meet", all_meets, index=0, key=f"nav_{name}")
     latest = subset[subset['Meet'] == selected_meet].iloc[-1]
     
-    # B. Side-by-Side Metrics (Pulls from AA_Rank for the Division)
+    # B. Side-by-Side Metrics (Restored to Meet Rank for the top box)
     aa_val = latest.get('AA', 0)
-    # Pulling AA_Rank which represents the Rank within the Division
-    aa_div_rank = latest.get('AA_Rank', latest.get('Meet_Rank', '-'))
-    total_in_div = latest.get('Meet_Rank_Total', '-')
+    meet_rank = latest.get('Meet_Rank', '-')
+    meet_total = latest.get('Meet_Rank_Total', '-')
     
-    rank_display = f"{int(float(aa_div_rank))} / {int(float(total_in_div))}" if str(aa_div_rank) != '-' else "-"
+    rank_display = f"{int(float(meet_rank))} / {int(float(meet_total))}" if str(meet_rank) != '-' else "-"
 
     st.markdown(f"""
         <table style="width:100%; border:none; margin-top:10px;">
@@ -75,14 +66,14 @@ def show_gymnast_tab(name, color, events):
                     <div style="font-size:32px; font-weight:bold; color:{color};">{aa_val:.3f}</div>
                 </td>
                 <td style="width:50%; text-align:center; border:none;">
-                    <div style="color:gray; font-size:12px;">🏆 Division Rank</div>
+                    <div style="color:gray; font-size:12px;">🏆 Meet Rank</div>
                     <div style="font-size:32px; font-weight:bold;">{rank_display}</div>
                 </td>
             </tr>
         </table>
     """, unsafe_allow_html=True)
 
-    # C. Score Table with Correct Division Ranks
+    # C. Score Table (Kept Division Rank as requested)
     current_year = latest['Date'].year
     year_data = subset[subset['Date'].dt.year == current_year]
     cols = list(events.keys()) + ["AA"]
@@ -93,8 +84,8 @@ def show_gymnast_tab(name, color, events):
         s_pb = year_data[c].max() if c in year_data.columns else 0
         score_row.append(f"{val:.3f}")
         
-        # Pull Rank: Event_Rank for events, AA_Rank for the AA column
-        r_val = latest.get(f"{c}_Rank" if c != "AA" else "AA_Rank", latest.get("Meet_Rank", "-"))
+        # Pull Division Rank: Event_Rank for events, AA_Rank for AA
+        r_val = latest.get(f"{c}_Rank" if c != "AA" else "AA_Rank", "-")
         rank_row.append(str(r_val).replace('.0', ''))
         pb_row.append(f"{s_pb:.3f}")
 
@@ -142,4 +133,3 @@ tab1, tab2, tab3 = st.tabs(["Annabelle", "Azalea", "Ansel"])
 with tab1: show_gymnast_tab("Annabelle", "#FF69B4", events_girls)
 with tab2: show_gymnast_tab("Azalea", "#9370DB", events_girls)
 with tab3: show_gymnast_tab("Ansel", "#008080", events_boys)
-    
