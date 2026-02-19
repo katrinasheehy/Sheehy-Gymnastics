@@ -1,0 +1,43 @@
+Date,Gymnast,Meet,Event,Score,Session_Median,Session_Max,Count,Level,Division,Percentile,JSI
+2026-02-13,Ansel Sheehy,2026 Mas Watanabe,VT,9.3,9.3,9.4,152,4D1,9 yrs,95.0,0.78
+2026-02-13,Ansel Sheehy,2026 Mas Watanabe,PH,8.8,9.0,9.6,152,4D1,9 yrs,42.0,0.78
+2026-02-13,Ansel Sheehy,2026 Mas Watanabe,SR,8.6,8.7,9.3,152,4D1,9 yrs,46.0,0.78
+2026-02-13,Ansel Sheehy,2026 Mas Watanabe,FX,8.5,8.9,9.4,152,4D1,9 yrs,35.0,0.78
+2026-02-13,Ansel Sheehy,2026 Mas Watanabe,PB,7.4,8.5,9.2,152,4D1,9 yrs,12.0,0.78
+2026-02-13,Ansel Sheehy,2026 Mas Watanabe,HB,8.8,8.5,9.1,152,4D1,9 yrs,68.0,0.78
+2026-01-23,Ansel Sheehy,Stanford Open 2026,VT,9.2,9.0,9.5,151,4D1,10 yrs,86.0,0.81
+2026-01-23,Ansel Sheehy,Stanford Open 2026,PH,9.0,8.8,9.4,151,4D1,10 yrs,65.0,0.81
+2026-01-23,Ansel Sheehy,Stanford Open 2026,SR,8.6,8.5,9.2,151,4D1,10 yrs,58.0,0.81
+2026-01-23,Ansel Sheehy,Stanford Open 2026,FX,8.8,8.6,9.3,151,4D1,10 yrs,72.0,0.81
+2026-01-23,Ansel Sheehy,Stanford Open 2026,PB,8.1,8.2,9.0,151,4D1,10 yrs,45.0,0.81
+2026-01-23,Ansel Sheehy,Stanford Open 2026,HB,8.3,8.1,8.9,151,4D1,10 yrs,62.0,0.81
+2026-01-17,Ansel Sheehy,2026 Muscle Beach Invitational Mens,VT,9.0,9.2,9.6,66,4D1,8-9 Yrs,42.0,1.21
+2026-01-17,Ansel Sheehy,2026 Muscle Beach Invitational Mens,PH,9.0,8.4,9.5,66,4D1,8-9 Yrs,80.0,1.21
+2026-01-17,Ansel Sheehy,2026 Muscle Beach Invitational Mens,SR,8.3,8.1,9.2,66,4D1,8-9 Yrs,60.0,1.21
+2026-01-17,Ansel Sheehy,2026 Muscle Beach Invitational Mens,FX,7.8,8.5,9.4,66,4D1,8-9 Yrs,15.0,1.21
+2026-01-17,Ansel Sheehy,2026 Muscle Beach Invitational Mens,PB,7.6,8.2,9.1,66,4D1,8-9 Yrs,22.0,1.21
+2026-01-17,Ansel Sheehy,2026 Muscle Beach Invitational Mens,HB,6.1,7.8,9.0,66,4D1,8-9 Yrs,5.0,1.21
+2026-01-22,Annabelle Sheehy,2026 Rose Gold Classic,VT,9.7,9.2,9.7,62,3,Sr B,100.0,-0.18
+2026-01-22,Annabelle Sheehy,2026 Rose Gold Classic,UB,9.55,8.8,9.6,62,3,Sr B,98.0,-0.18
+2026-01-22,Annabelle Sheehy,2026 Rose Gold Classic,BB,9.325,8.7,9.5,62,3,Sr B,85.0,-0.18
+2026-01-22,Annabelle Sheehy,2026 Rose Gold Classic,FX,9.425,8.9,9.5,62,3,Sr B,92.0,-0.18
+2026-01-22,Azalea Sheehy,2026 Rose Gold Classic,VT,9.425,9.1,9.5,50,4,Ch B,88.0,-0.18
+2026-01-22,Azalea Sheehy,2026 Rose Gold Classic,UB,9.375,8.7,9.4,50,4,Ch B,94.0,-0.18
+2026-01-22,Azalea Sheehy,2026 Rose Gold Classic,BB,9.225,8.6,9.3,50,4,Ch B,90.0,-0.18
+2026-01-22,Azalea Sheehy,2026 Rose Gold Classic,FX,9.475,8.9,9.5,50,4,Ch B,98.0,-0.18
+2026-02-14,Annabelle Sheehy,2026 Mardi Gras Invitational,VT,9.375,9.1,9.4,38,3,Senior A,82.0,-0.08
+2026-02-14,Annabelle Sheehy,2026 Mardi Gras Invitational,UB,9.4,8.8,9.5,38,3,Senior A,95.0,-0.08
+2026-02-14,Annabelle Sheehy,2026 Mardi Gras Invitational,BB,9.525,8.7,9.6,38,3,Senior A,97.0,-0.08
+2026-02-14,Annabelle Sheehy,2026 Mardi Gras Invitational,FX,9.025,8.8,9.2,38,3,Senior A,65.0,-0.08
+2026-02-14,Azalea Sheehy,2026 Mardi Gras Invitational,VT,9.225,9.0,9.3,22,4,Older,75.0,-0.08
+2026-02-14,Azalea Sheehy,2026 Mardi Gras Invitational,UB,9.35,8.7,9.4,22,4,Older,92.0,-0.08
+2026-02-14,Azalea Sheehy,2026 Mardi Gras Invitational,BB,9.6,8.6,9.6,22,4,Older,100.0,-0.08
+2026-02-14,Azalea Sheehy,2026 Mardi Gras Invitational,FX,9.45,8.9,9.5,22,4,Older,95.0,-0.08
+2026-01-09,Annabelle Sheehy,2026 Golden State Classic,VT,9.3,9.1,9.4,18,3,Older,70.0,0.12
+2026-01-09,Annabelle Sheehy,2026 Golden State Classic,UB,9.175,8.7,9.3,18,3,Older,80.0,0.12
+2026-01-09,Annabelle Sheehy,2026 Golden State Classic,BB,9.125,8.5,9.2,18,3,Older,83.0,0.12
+2026-01-09,Annabelle Sheehy,2026 Golden State Classic,FX,8.95,8.7,9.1,18,3,Older,75.0,0.12
+2026-01-09,Azalea Sheehy,2026 Golden State Classic,VT,9.5,9.2,9.6,10,4,Younger,95.0,0.12
+2026-01-09,Azalea Sheehy,2026 Golden State Classic,UB,9.45,8.8,9.5,10,4,Younger,98.0,0.12
+2026-01-09,Azalea Sheehy,2026 Golden State Classic,BB,8.925,8.5,9.0,10,4,Younger,70.0,0.12
+2026-01-09,Azalea Sheehy,2026 Golden State Classic,FX,9.4,8.9,9.5,10,4,Younger,92.0,0.12
