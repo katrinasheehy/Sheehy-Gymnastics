@@ -48,6 +48,7 @@ def show_athlete_history(gymnast_name, selected_meet, color):
         with c2:
             st.plotly_chart(create_context_chart(row, gymnast_name), use_container_width=True, config={'staticPlot': True})
         
+        # Corrected: Pulling exact Count from the row
         mood_label = get_jsi_label(row['JSI'])
         st.markdown(f"""
             <div style='margin-top:-15px; padding-top:10px; margin-bottom:12px; font-size:0.8rem; color:#888;'>
