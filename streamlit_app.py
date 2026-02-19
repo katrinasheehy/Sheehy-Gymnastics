@@ -92,10 +92,6 @@ def show_gymnast_tab(name, color, events):
     table_df = pd.DataFrame([score_row, rank_row, pb_row], columns=cols, 
                             index=["Score", f"{latest.get('Division', 'Div')} Rank", "Season PB"])
 
-    # Highlighting logic: If current score == Season PB, the cell glows
-    def highlight_pb(s):
-        return ['background-color: ' + color + '22; border: 2px solid ' + color if s.iloc[0] == s.iloc[2] else '' for _ in range(len(s))]
-
     st.table(table_df)
 
     # D. Condensed Context Cards
@@ -129,4 +125,14 @@ def show_gymnast_tab(name, color, events):
         p = chart_data.loc[idx]
         fig.add_annotation(x=p['Meet_ID'], y=p['AA'], text=f"⭐ <b>PB: {p['AA']:.3f}</b>", showarrow=True, arrowhead=2, ay=-40, font=dict(color="white"), bgcolor=color, borderpad=4)
 
-    fig.update_layout(yaxis=dict(range=[y_min, y_max], dtick=1), xaxis=dict(tickangle=45, tickvals
+    # FIXED: Re-formatted for safety to prevent clipping
+    fig.update_layout(
+        yaxis=dict(range=[y_min, y_max], dtick=1),
+        xaxis=dict(tickangle=45, tickvals=chart_data['Meet_ID'], ticktext=chart_data['Meet']),
+        height=480,
+        margin=dict(b=110, t=10),
+        dragmode=False,
+        template="plotly_white",
+        showlegend=False
+    )
+    st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
