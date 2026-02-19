@@ -19,20 +19,24 @@ def get_jsi_label(jsi):
     if jsi >= 0.05: return "🌤️ Slightly Looser"
     return "⚖️ Average Scoring"
 
-def show_athlete_history(gymnast_name, selected_meet):
-    try:
-        df_ctx = pd.read_csv("session_context_analytics.csv")
-    except FileNotFoundError:
-        st.error("Missing context file.")
-        return
+def show_athlete_history(gymnast_name, selected_meet, theme_color):
+    df_ctx = pd.read_csv("session_context_analytics.csv")
     meet_rows = df_ctx[(df_ctx['Gymnast'].str.contains(gymnast_name.split()[0], case=False)) & (df_ctx['Meet'] == selected_meet)]
-    if meet_rows.empty:
-        st.info("No context found.")
-        return
+
     for _, row in meet_rows.iterrows():
-        with st.container(border=True):
-            st.markdown(f'<p style="font-weight:bold; font-size:1.1rem; margin-bottom:0;">{row["Event"]}</p>', unsafe_allow_html=True)
+        # Using a custom HTML layout for the "Left Label" design
+        col_label, col_chart = st.columns([1, 4])
+        
+        with col_label:
+            st.markdown(f"<div style='margin-top:45px; font-weight:bold; font-size:1.1rem;'>{row['Event']}</div>", unsafe_allow_html=True)
+        
+        with col_chart:
             st.plotly_chart(create_context_chart(row, gymnast_name), use_container_width=True, config={'staticPlot': True})
-            st.write(f"🏆 **Top {row['Percentile']:.0f}%** of {int(row['Count'])} athletes.")
-            jsi_val = row['JSI']
-            st.markdown(f"<small><b>Judge Mood:</b> {get_jsi_label(jsi_val)} (JSI: {jsi_val:.2f})</small>", unsafe_allow_html=True)
+            
+        # Small stats line underneath the chart
+        st.markdown(f"""
+            <div style='margin-top:-25px; margin-bottom:15px; font-size:0.85rem; color:#666;'>
+                🏆 <b>Top {row['Percentile']:.0f}%</b> of {int(row['Count'])} athletes | 
+                <b>Mood:</b> {get_jsi_label(row['JSI'])}
+            </div>
+        """, unsafe_allow_html=True)
