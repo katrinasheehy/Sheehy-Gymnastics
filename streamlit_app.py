@@ -17,15 +17,12 @@ def load_data():
 
 df = load_data()
 
-# --- 3. App-Wide CSS (Fixed for Mobile Visibility) ---
+# --- 3. App-Wide CSS ---
 st.markdown("""
     <style>
     h1 { white-space: nowrap; font-size: 1.6rem !important; overflow: hidden; margin-bottom: 5px; }
-    
-    /* Clean Tab Styling (Removed Sticky to fix mobile box issue) */
     [data-testid="stTabSelectionData"] { display: none !important; }
     hr { display: none !important; }
-    
     .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
         font-size: 24px !important;
         font-weight: bold;
@@ -35,7 +32,6 @@ st.markdown("""
 
 # --- 4. The Master Gymnast Function ---
 def show_gymnast_tab(name, color, events):
-    # Dynamic CSS for child colors
     st.markdown(f"""
         <style>
         div[data-baseweb="select"] > div {{ border-color: {color} !important; }}
@@ -51,11 +47,9 @@ def show_gymnast_tab(name, color, events):
     selected_meet = st.selectbox("📅 Select Meet", all_meets, index=0, key=f"nav_{name}")
     latest = subset[subset['Meet'] == selected_meet].iloc[-1]
     
-    # B. Side-by-Side Metrics (Restored to Meet Rank for the top box)
     aa_val = latest.get('AA', 0)
     meet_rank = latest.get('Meet_Rank', '-')
     meet_total = latest.get('Meet_Rank_Total', '-')
-    
     rank_display = f"{int(float(meet_rank))} / {int(float(meet_total))}" if str(meet_rank) != '-' else "-"
 
     st.markdown(f"""
@@ -73,7 +67,6 @@ def show_gymnast_tab(name, color, events):
         </table>
     """, unsafe_allow_html=True)
 
-    # C. Score Table (Kept Division Rank as requested)
     current_year = latest['Date'].year
     year_data = subset[subset['Date'].dt.year == current_year]
     cols = list(events.keys()) + ["AA"]
@@ -83,8 +76,6 @@ def show_gymnast_tab(name, color, events):
         val = latest.get(c, 0)
         s_pb = year_data[c].max() if c in year_data.columns else 0
         score_row.append(f"{val:.3f}")
-        
-        # Pull Division Rank: Event_Rank for events, AA_Rank for AA
         r_val = latest.get(f"{c}_Rank" if c != "AA" else "AA_Rank", "-")
         rank_row.append(str(r_val).replace('.0', ''))
         pb_row.append(f"{s_pb:.3f}")
@@ -93,11 +84,9 @@ def show_gymnast_tab(name, color, events):
                             index=["Score", f"{latest.get('Division', 'Div')} Rank", "Season PB"])
     st.table(table_df)
 
-    # D. Condensed Event Analysis
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">🎯 Event Analysis</p>', unsafe_allow_html=True)
     show_athlete_history(name, selected_meet, color)
 
-    # E. Trend Chart
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">📈 Season Progress</p>', unsafe_allow_html=True)
     is_boy = "Ansel" in name
     y_min, y_max, threshold = (47, 56, 52) if is_boy else (35, 40, 38)
@@ -106,7 +95,7 @@ def show_gymnast_tab(name, color, events):
     chart_data['Meet_ID'] = chart_data['Date'].dt.strftime('%Y-%m-%d') + " " + chart_data['Meet']
 
     fig = go.Figure()
-    for i, yr in enumerate(chart_data['Date'].dt.year.unique()):
+    for yr in chart_data['Date'].dt.year.unique():
         yr_sub = chart_data[chart_data['Date'].dt.year == yr]
         fig.add_vrect(x0=yr_sub.iloc[0]['Meet_ID'], x1=yr_sub.iloc[-1]['Meet_ID'], fillcolor="rgba(100,100,100,0.1)", layer="below", line_width=0)
         fig.add_annotation(x=yr_sub.iloc[len(yr_sub)//2]['Meet_ID'], y=y_min + 0.4, text=f"<b>{yr} Season</b>", showarrow=False, font=dict(color="white"))
