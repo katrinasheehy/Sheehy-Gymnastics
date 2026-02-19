@@ -67,6 +67,7 @@ def show_gymnast_tab(name, color, events):
         </table>
     """, unsafe_allow_html=True)
 
+    # --- SCOREBOARD WITH PB HIGHLIGHT ---
     current_year = latest['Date'].year
     year_data = subset[subset['Date'].dt.year == current_year]
     cols = list(events.keys()) + ["AA"]
@@ -75,18 +76,29 @@ def show_gymnast_tab(name, color, events):
     for c in cols:
         val = latest.get(c, 0)
         s_pb = year_data[c].max() if c in year_data.columns else 0
-        score_row.append(f"{val:.3f}")
+        score_row.append(val) # Keep as float for comparison
         r_val = latest.get(f"{c}_Rank" if c != "AA" else "AA_Rank", "-")
         rank_row.append(str(r_val).replace('.0', ''))
-        pb_row.append(f"{s_pb:.3f}")
+        pb_row.append(s_pb)
 
     table_df = pd.DataFrame([score_row, rank_row, pb_row], columns=cols, 
                             index=["Score", f"{latest.get('Division', 'Div')} Rank", "Season PB"])
-    st.table(table_df)
+
+    # Highlighting Logic: Color the "Score" cell if it matches "Season PB"
+    def highlight_pb(data):
+        attr = f'background-color: {color}; color: white; font-weight: bold;'
+        is_pb = data.loc['Score'] == data.loc['Season PB']
+        return pd.DataFrame([[attr if is_pb[col] else '' for col in data.columns],
+                             ['' for _ in data.columns],
+                             ['' for _ in data.columns]], 
+                            index=data.index, columns=data.columns)
+
+    st.dataframe(table_df.style.apply(highlight_pb, axis=None).format(subset=(["Score", "Season PB"], slice(None)), formatter="{:.3f}"), use_container_width=True)
 
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">🎯 Event Analysis</p>', unsafe_allow_html=True)
     show_athlete_history(name, selected_meet, color)
 
+    # --- TREND CHART ---
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">📈 Season Progress</p>', unsafe_allow_html=True)
     is_boy = "Ansel" in name
     y_min, y_max, threshold = (47, 56, 52) if is_boy else (35, 40, 38)
@@ -113,7 +125,6 @@ def show_gymnast_tab(name, color, events):
 
     fig.update_layout(yaxis=dict(range=[y_min, y_max], dtick=1), xaxis=dict(tickangle=45, tickvals=chart_data['Meet_ID'], ticktext=chart_data['Meet']), height=480, margin=dict(b=110, t=10), dragmode=False, template="plotly_white", showlegend=False)
     st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
-
 # --- 5. Main Execution ---
 st.title("🤸 Sheehy All-Around")
 events_girls = {"VT": "Vault", "UB": "Bars", "BB": "Beam", "FX": "Floor"}
