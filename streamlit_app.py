@@ -136,3 +136,21 @@ def show_gymnast_tab(name, color, events):
         showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
+
+
+# --- 5. Main Content Execution ---
+# Define the events for Boys and Girls
+events_girls = {"VT": "Vault", "UB": "Bars", "BB": "Beam", "FX": "Floor"}
+events_boys = {"FX": "Floor", "PH": "Pommel", "SR": "Rings", "VT": "Vault", "PB": "P-Bars", "HB": "H-Bar"}
+
+# Create the tabs
+tab1, tab2, tab3 = st.tabs(["Annabelle", "Azalea", "Ansel"])
+
+with tab1:
+    show_gymnast_tab("Annabelle", "#FF69B4", events_girls)
+
+with tab2:
+    show_gymnast_tab("Azalea", "#9370DB", events_girls)
+
+with tab3:
+    show_gymnast_tab("Ansel", "#008080", events_boys)
