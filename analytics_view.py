@@ -20,7 +20,7 @@ def create_context_chart(row, gymnast_name):
         paper_bgcolor='rgba(0,0,0,0)', 
         plot_bgcolor='rgba(0,0,0,0)', 
         showlegend=False, 
-        margin=dict(l=0, r=0, t=25, b=25), # Increased bottom margin to make space for labels
+        margin=dict(l=0, r=0, t=25, b=25), 
         height=110, 
         xaxis=dict(range=[x_min, x_max], showgrid=False, dtick=0.5, side="bottom", tickfont=dict(size=10)),
         yaxis=dict(showticklabels=False)
@@ -48,7 +48,6 @@ def show_athlete_history(gymnast_name, selected_meet, color):
         with c2:
             st.plotly_chart(create_context_chart(row, gymnast_name), use_container_width=True, config={'staticPlot': True})
         
-        # Added padding-top: 10px to push this line down away from the graph axis
         mood_label = get_jsi_label(row['JSI'])
         st.markdown(f"""
             <div style='margin-top:-15px; padding-top:10px; margin-bottom:12px; font-size:0.8rem; color:#888;'>
