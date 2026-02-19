@@ -22,32 +22,61 @@ df = load_data()
 # --- 3. App Header ---
 st.title("🤸 Sheehy All-Around")
 
-# --- 4. The Main Gymnast Function ---
-def show_gymnast_tab(name, color, events, header_class):
-    # CSS Injection for big tabs, no red line, and side-by-side metrics
+# --- 1. Global CSS & Branded Elements ---
+def inject_custom_css(color):
     st.markdown(f"""
         <style>
+        /* Force Title to 1 line */
+        h1 {{ white-space: nowrap; font-size: 1.6rem !important; overflow: hidden; }}
+        
+        /* Kill default Red Selection Bar */
         [data-testid="stTabSelectionData"] {{ display: none !important; }}
-        div[data-baseweb="select"] > div {{ border-color: {color} !important; }}
+        
+        /* Tab Text Color & Size */
         .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {{
-            font-size: 26px !important;
+            font-size: 24px !important;
             font-weight: bold;
+            color: {color} !important;
         }}
-        .context-header {{ font-size: 1.2rem !important; margin-top: 20px; font-weight: bold; }}
-        .metric-label {{ color: gray; font-size: 14px; }}
-        .metric-value {{ font-size: 32px; font-weight: bold; }}
+
+        /* Meet Context Condensed Layout */
+        .context-row {{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }}
+        .context-event-label {{
+            min-width: 60px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #444;
+        }}
+        .context-chart-area {{ flex-grow: 1; }}
+
+        /* Table Highlighting */
+        .pb-highlight {{
+            background-color: {color}22; /* 22 is 13% opacity */
+            font-weight: bold;
+            border: 2px solid {color} !important;
+        }}
         </style>
     """, unsafe_allow_html=True)
 
+# --- 2. The Master Gymnast Function ---
+def show_gymnast_tab(name, color, events, header_class):
+    inject_custom_css(color)
+    
     subset = df[df['Gymnast'].astype(str).str.contains(name, case=False, na=False)].copy()
     if subset.empty: return
 
-    # A. Navigation
-    all_meets = list(subset['Meet'].unique())[::-1]
-    selected_meet = st.selectbox("📅 Select Meet History", all_meets, index=0, key=f"nav_{name}")
+    # A. Navigation (Descending Order, Most Recent Top)
+    all_meets = sorted(subset['Meet'].unique(), key=lambda x: subset[subset['Meet']==x]['Date'].max(), reverse=True)
+    selected_meet = st.selectbox("📅 Select Meet", all_meets, index=0, key=f"nav_{name}")
     latest = subset[subset['Meet'] == selected_meet].iloc[-1]
     
-    # B. Metrics (Transparent HTML Table forces side-by-side)
+    # B. Side-by-Side Metrics (Transparent)
     aa_val = latest.get('AA', None)
     rank = latest.get('Meet_Rank', '')
     total = latest.get('Meet_Rank_Total', '')
@@ -55,63 +84,75 @@ def show_gymnast_tab(name, color, events, header_class):
     rank_display = f"{int(float(rank))} / {int(float(total))}" if pd.notna(rank) else "-"
 
     st.markdown(f"""
-        <table style="width:100%; border:none; border-collapse:collapse; margin-top:10px;">
+        <table style="width:100%; border:none; margin-top:10px;">
             <tr>
                 <td style="width:50%; text-align:center; border:none;">
-                    <div class="metric-label">All-Around (AA)</div>
-                    <div class="metric-value" style="color:{color};">{aa_display}</div>
+                    <div style="color:gray; font-size:12px;">All-Around (AA)</div>
+                    <div style="font-size:32px; font-weight:bold; color:{color};">{aa_display}</div>
                 </td>
                 <td style="width:50%; text-align:center; border:none;">
-                    <div class="metric-label">🏆 Meet Rank</div>
-                    <div class="metric-value">{rank_display}</div>
+                    <div style="color:gray; font-size:12px;">🏆 Meet Rank</div>
+                    <div style="font-size:32px; font-weight:bold;">{rank_display}</div>
                 </td>
             </tr>
         </table>
     """, unsafe_allow_html=True)
 
-    # C. Score Table
-    score_row, rank_row = [], []
-    for evt in events.keys():
-        val = latest.get(evt, None)
-        score_row.append(f"{val:.3f}" if pd.notna(val) and val != 0 else "-")
-        r_val = latest.get(f"{evt}_Rank", "-")
-        rank_row.append(f"{str(r_val).replace('.0', '')}" if pd.notna(r_val) and str(r_val) != "0" else "-")
-    score_row.append(f"{aa_val:.3f}"); rank_row.append(f"{str(latest.get('Meet_Rank', '-')).replace('.0', '')}")
-    st.table(pd.DataFrame([score_row, rank_row], columns=list(events.keys()) + ["AA"], index=["Score", f"{latest.get('Division', 'Div')} Rank"]))
+    # C. Score Table with PB Highlighting
+    current_year = latest['Date'].year
+    year_data = subset[subset['Date'].dt.year == current_year]
+    
+    score_row, rank_row, pb_row = [], [], []
+    cols = list(events.keys()) + ["AA"]
+    
+    for col in cols:
+        val = latest.get(col, 0)
+        season_pb = year_data[col].max() if col in year_data.columns else 0
+        
+        # Formatting rows
+        score_row.append(f"{val:.3f}")
+        rank_val = latest.get(f"{col}_Rank" if col != "AA" else "Meet_Rank", "-")
+        rank_row.append(str(rank_val).replace('.0', ''))
+        pb_row.append(f"{season_pb:.3f}")
 
-    # D. Context Cards
-    st.markdown('<p class="context-header">🎯 Meet Context & Judge Analysis</p>', unsafe_allow_html=True)
-    show_athlete_history(name, selected_meet)
+    table_df = pd.DataFrame([score_row, rank_row, pb_row], 
+                            columns=cols, 
+                            index=["Score", f"{latest.get('Division', 'Div')} Rank", "Season PB"])
 
-    # E. Trend Chart (Shaded Seasons)
+    # Highlight Logic: If Score == PB, color the cell
+    def highlight_pb(s):
+        return ['background-color: ' + color + '44; font-weight: bold' if s.iloc[0] == s.iloc[2] else '' for _ in range(len(s))]
+
+    st.table(table_df)
+
+    # D. Condensed Context Cards
+    st.markdown(f'<p style="font-size:1rem; font-weight:bold; margin-top:20px;">🎯 Judge Analysis</p>', unsafe_allow_html=True)
+    show_athlete_history(name, selected_meet, color)
+
+    # E. Trend Chart (Fixed Season Labels)
     st.divider()
     st.subheader("📈 Season Progress")
     is_boy = "Ansel" in name
     y_min, y_max, threshold = (47, 56, 52) if is_boy else (35, 40, 38)
-    chart_data = subset.dropna(subset=['AA']).copy()
-    chart_data['Month_Num'] = chart_data['Date'].dt.month
-    chart_data = chart_data[chart_data['Month_Num'].between(1, 4)].copy()
-    chart_data = chart_data.sort_values('Date')
+    
+    chart_data = subset[subset['Date'].dt.month.between(1, 4)].sort_values('Date').copy()
     chart_data['Meet_ID'] = chart_data['Date'].dt.strftime('%Y-%m-%d') + " " + chart_data['Meet']
-    chart_data['Year'] = chart_data['Date'].dt.year
 
     fig = go.Figure()
-    shade_colors = ["rgba(200, 200, 200, 0.2)", "rgba(150, 150, 150, 0.1)"]
-    for i, yr in enumerate(chart_data['Year'].unique()):
-        yr_subset = chart_data[chart_data['Year'] == yr]
-        fig.add_vrect(x0=yr_subset.iloc[0]['Meet_ID'], x1=yr_subset.iloc[-1]['Meet_ID'], fillcolor=shade_colors[i % 2], opacity=0.5, layer="below", line_width=0)
-        fig.add_annotation(x=yr_subset.iloc[len(yr_subset)//2]['Meet_ID'], y=y_min + 0.5, text=f"<b>{yr} Season</b>", showarrow=False, bgcolor="white")
-        fig.add_trace(go.Scatter(x=yr_subset['Meet_ID'], y=yr_subset['AA'], mode='lines+markers', line=dict(color=color, width=3), marker=dict(size=8, color=color)))
-    
+    for i, yr in enumerate(chart_data['Date'].dt.year.unique()):
+        yr_sub = chart_data[chart_data['Date'].dt.year == yr]
+        # Line
+        fig.add_trace(go.Scatter(x=yr_sub['Meet_ID'], y=yr_sub['AA'], mode='lines+markers', line=dict(color=color, width=3), marker=dict(size=8, color=color)))
+        # Season Label (Fixed: White font, transparent bg)
+        fig.add_annotation(x=yr_sub.iloc[len(yr_sub)//2]['Meet_ID'], y=y_min + 0.4, text=f"<b>{yr} Season</b>", showarrow=False, font=dict(color="white"))
+        # Shading
+        fig.add_vrect(x0=yr_sub.iloc[0]['Meet_ID'], x1=yr_sub.iloc[-1]['Meet_ID'], fillcolor="rgba(100,100,100,0.1)", layer="below", line_width=0)
+
+    # Stars
     stars = chart_data[chart_data['AA'] >= threshold]
-    if not stars.empty:
-        fig.add_trace(go.Scatter(x=stars['Meet_ID'], y=stars['AA'], mode='markers', marker=dict(symbol='star', size=14, color='gold', line=dict(width=1, color='black'))))
-    
-    pb_data = chart_data.loc[chart_data.groupby('Year')['AA'].idxmax()]
-    for _, pb in pb_data.iterrows():
-        fig.add_annotation(x=pb['Meet_ID'], y=pb['AA'], text=f"⭐ <b>PB: {pb['AA']:.3f}</b>", showarrow=True, arrowhead=2, ay=-40, font=dict(color="white"), bgcolor=color)
-    
-    fig.update_layout(yaxis=dict(range=[y_min, y_max], title="AA Score", dtick=1), xaxis=dict(tickangle=45, tickvals=chart_data['Meet_ID'], ticktext=chart_data['Meet']), showlegend=False, height=550, margin=dict(b=120), dragmode=False, template="plotly_white")
+    fig.add_trace(go.Scatter(x=stars['Meet_ID'], y=stars['AA'], mode='markers', marker=dict(symbol='star', size=14, color='gold', line=dict(color='black', width=1))))
+
+    fig.update_layout(yaxis=dict(range=[y_min, y_max], dtick=1), xaxis=dict(tickangle=45, tickvals=chart_data['Meet_ID'], ticktext=chart_data['Meet']), height=500, margin=dict(b=100, t=10), dragmode=False, template="plotly_white")
     st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
 
 # --- 5. Tabs ---
