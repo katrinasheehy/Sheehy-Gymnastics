@@ -7,13 +7,8 @@ def create_context_chart(row, gymnast_name):
     x_min, x_max = (7.0, 10.0) if is_boy else (8.5, 10.0)
     fig = go.Figure()
     
-    # Layer 1: Session Range
     fig.add_trace(go.Bar(y=["Score"], x=[row['Session_Max'] - x_min], base=x_min, orientation='h', marker_color='#E0E0E0', hoverinfo='skip', width=0.4))
-    
-    # Layer 2: The Score
     fig.add_trace(go.Scatter(x=[row['Score']], y=["Score"], mode='markers+text', marker=dict(symbol='star', size=18, color='gold', line=dict(width=1.5, color='black')), text=[f"<b>{row['Score']:.3f}</b>"], textposition="top center"))
-    
-    # Layer 3: The Median
     fig.add_trace(go.Scatter(x=[row['Session_Median']], y=["Score"], mode='markers+text', marker=dict(symbol='line-ns-open', size=24, color='white', line=dict(width=3)), text=[f"{row['Session_Median']:.2f}"], textposition="bottom center"))
     
     fig.update_layout(
@@ -48,10 +43,12 @@ def show_athlete_history(gymnast_name, selected_meet, color):
         with c2:
             st.plotly_chart(create_context_chart(row, gymnast_name), use_container_width=True, config={'staticPlot': True})
         
-        # Corrected: Pulling exact Count from the row
+        # Explicitly using row['Count'] to avoid any +1 logic errors
+        gymnast_count = int(row['Count'])
         mood_label = get_jsi_label(row['JSI'])
+        
         st.markdown(f"""
             <div style='margin-top:-15px; padding-top:10px; margin-bottom:12px; font-size:0.8rem; color:#888;'>
-                🏆 <b>Top {row['Percentile']:.0f}%</b> of {int(row['Count'])} gymnasts | <b>Judge's Mood:</b> {mood_label} ({row['JSI']:.2f})
+                🏆 <b>Top {row['Percentile']:.0f}%</b> of {gymnast_count} gymnasts | <b>Judge's Mood:</b> {mood_label} ({row['JSI']:.2f})
             </div>
         """, unsafe_allow_html=True)
