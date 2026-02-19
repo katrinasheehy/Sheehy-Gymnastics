@@ -17,12 +17,23 @@ def load_data():
 
 df = load_data()
 
-# --- 3. App-Wide CSS ---
+# --- 3. Persistent App-Wide CSS (Sticky Tabs) ---
 st.markdown("""
     <style>
+    h1 { white-space: nowrap; font-size: 1.6rem !important; overflow: hidden; margin-bottom: 5px; }
+    
+    /* Sticky Header Logic */
+    div[data-testid="stTabs"] {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 999;
+        padding-top: 10px;
+    }
+
     [data-testid="stTabSelectionData"] { display: none !important; }
     hr { display: none !important; }
-    h1 { white-space: nowrap; font-size: 1.6rem !important; overflow: hidden; margin-bottom: 10px; }
+    
     .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
         font-size: 24px !important;
         font-weight: bold;
@@ -32,9 +43,7 @@ st.markdown("""
 
 # --- 4. The Master Gymnast Function ---
 def show_gymnast_tab(name, color, events):
-    # App Title (Restored)
-    st.title("🤸 Sheehy All-Around")
-    
+    # Dynamic CSS for child colors
     st.markdown(f"""
         <style>
         div[data-baseweb="select"] > div {{ border-color: {color} !important; }}
@@ -50,10 +59,14 @@ def show_gymnast_tab(name, color, events):
     selected_meet = st.selectbox("📅 Select Meet", all_meets, index=0, key=f"nav_{name}")
     latest = subset[subset['Meet'] == selected_meet].iloc[-1]
     
-    # B. Side-by-Side Metrics
-    aa_val, rank = latest.get('AA', 0), latest.get('Meet_Rank', 0)
-    total = latest.get('Meet_Rank_Total', 0)
+    # B. Side-by-Side Metrics (Pulls from AA_Rank for the Division)
+    aa_val = latest.get('AA', 0)
+    # Pulling AA_Rank which represents the Rank within the Division
+    aa_div_rank = latest.get('AA_Rank', latest.get('Meet_Rank', '-'))
+    total_in_div = latest.get('Meet_Rank_Total', '-')
     
+    rank_display = f"{int(float(aa_div_rank))} / {int(float(total_in_div))}" if str(aa_div_rank) != '-' else "-"
+
     st.markdown(f"""
         <table style="width:100%; border:none; margin-top:10px;">
             <tr>
@@ -62,8 +75,8 @@ def show_gymnast_tab(name, color, events):
                     <div style="font-size:32px; font-weight:bold; color:{color};">{aa_val:.3f}</div>
                 </td>
                 <td style="width:50%; text-align:center; border:none;">
-                    <div style="color:gray; font-size:12px;">🏆 Meet Rank</div>
-                    <div style="font-size:32px; font-weight:bold;">{int(float(rank))} / {int(float(total))}</div>
+                    <div style="color:gray; font-size:12px;">🏆 Division Rank</div>
+                    <div style="font-size:32px; font-weight:bold;">{rank_display}</div>
                 </td>
             </tr>
         </table>
@@ -80,8 +93,8 @@ def show_gymnast_tab(name, color, events):
         s_pb = year_data[c].max() if c in year_data.columns else 0
         score_row.append(f"{val:.3f}")
         
-        # Pull Division Rank (Event_Rank or Meet_Rank for AA)
-        r_val = latest.get(f"{c}_Rank" if c != "AA" else "Meet_Rank", "-")
+        # Pull Rank: Event_Rank for events, AA_Rank for the AA column
+        r_val = latest.get(f"{c}_Rank" if c != "AA" else "AA_Rank", latest.get("Meet_Rank", "-"))
         rank_row.append(str(r_val).replace('.0', ''))
         pb_row.append(f"{s_pb:.3f}")
 
@@ -89,7 +102,7 @@ def show_gymnast_tab(name, color, events):
                             index=["Score", f"{latest.get('Division', 'Div')} Rank", "Season PB"])
     st.table(table_df)
 
-    # D. Condensed Event Analysis (Restored Formatting)
+    # D. Condensed Event Analysis
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">🎯 Event Analysis</p>', unsafe_allow_html=True)
     show_athlete_history(name, selected_meet, color)
 
@@ -122,9 +135,11 @@ def show_gymnast_tab(name, color, events):
     st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
 
 # --- 5. Main Execution ---
+st.title("🤸 Sheehy All-Around")
 events_girls = {"VT": "Vault", "UB": "Bars", "BB": "Beam", "FX": "Floor"}
 events_boys = {"FX": "Floor", "PH": "Pommel", "SR": "Rings", "VT": "Vault", "PB": "P-Bars", "HB": "H-Bar"}
 tab1, tab2, tab3 = st.tabs(["Annabelle", "Azalea", "Ansel"])
 with tab1: show_gymnast_tab("Annabelle", "#FF69B4", events_girls)
 with tab2: show_gymnast_tab("Azalea", "#9370DB", events_girls)
 with tab3: show_gymnast_tab("Ansel", "#008080", events_boys)
+    
