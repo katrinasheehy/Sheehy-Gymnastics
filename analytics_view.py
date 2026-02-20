@@ -35,23 +35,23 @@ def create_v2_context_chart(row, gymnast_name):
         width=0.15 
     ))
 
-    # --- FINAL CORRECTED LABELS ---
-    # Top label: Lined up with the top of the nested bars
+   # Bar Labels
+    # Centered vertically on the slate blue bar
     fig.add_annotation(
-        x=x_min, y=0.42, 
-        text="Age Division", # The "Inner" specific pond
+        x=x_min + 0.05, y=0.25, 
+        text="Age Division", 
         showarrow=False, 
-        font=dict(size=10, color="black", weight="bold"), 
+        font=dict(size=9, color="black", weight="bold"), 
         xanchor="left"
     )
     
-    # Bottom label: Pinned to the very bottom as the foundation
+    # White label tucked just inside the bottom edge of the light gray bar
     fig.add_annotation(
-        x=x_min, y=0.08, 
-        text="Whole Level", # The "Big" pond foundation
+        x=x_min + 0.05, y=0.12, 
+        text="Whole Level", 
         showarrow=False, 
-        font=dict(size=10, color="black"), 
-        xanchor="left", yanchor="top"
+        font=dict(size=9, color="white", weight="bold"), 
+        xanchor="left"
     )
 
     
