@@ -34,22 +34,18 @@ To support advanced analytics without sacrificing speed, V2 utilizes a **Normali
 * **Metrics:**
     * `JSI_Standard`: Strictness measured against USAG National Success Markers.
     * `IQR (Interquartile Range)`: A measure of judging consistency (Lower = More Consistent).
-# JUDGE ANALYTICS VERSION 2.0
-# -----------------------------------------------------------------------------------------
-# CALCULATION METHODS:
-# 1. JSI_Standard: (Level_Median - USAG_Benchmark). Reflects absolute strictness.
-# 2. JSI_Relative: (Level_Median - Meet_Average_Median). Reflects strictness relative to peers.
-# 3. IQR: (Q3 Score - Q1 Score). Reflects judge consistency (Lower = More Consistent).
-# -----------------------------------------------------------------------------------------
-# DATA SOURCE & BENCHMARKS:
-# Benchmarks derived from USAG Compulsory Scoring Guidelines (Start Value - standard execution deductions)
-# and historical regional scoring medians (2023-2025).
-# 
-# GIRLS LEVEL 3: VT(9.2), UB(8.8), BB(8.7), FX(9.0)
-# GIRLS LEVEL 4: VT(9.1), UB(8.7), BB(8.6), FX(8.9)
-# BOYS LEVEL 4D1: FX(8.8), PH(8.5), SR(8.4), VT(9.2), PB(8.5), HB(8.5)
-# -----------------------------------------------------------------------------------------
----
+
+## ⚖️ Judge Analytics Definitions (Moved from CSV)
+
+### **Calculation Methodologies**
+1. **JSI_Standard (Strictness):** `Level_Median - USAG_Benchmark`. This measures how high or low the judge is scoring compared to national expectations.
+2. **JSI_Relative (Peer comparison):** `Level_Median - Average_Median_of_Meet`. This shows if one event was judged significantly harder than the others in the same room.
+3. **IQR (Consistency):** `Q3 - Q1`. Measures the spread of the middle 50% of scores. A lower IQR means the judge was more consistent.
+
+### **National Success Benchmarks (2026)**
+* **Girls Level 3:** VT(9.2), UB(8.8), BB(8.7), FX(9.0)
+* **Girls Level 4:** VT(9.1), UB(8.7), BB(8.6), FX(8.9)
+* **Boys Level 4D1:** FX(8.8), PH(8.5), SR(8.4), VT(9.2), PB(8.5), HB(8.5)
 
 ## 📈 2. Statistical Requirements
 
