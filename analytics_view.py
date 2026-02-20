@@ -21,19 +21,38 @@ def create_v2_context_chart(row, gymnast_name):
     
     fig = go.Figure()
     
-    # Layer 1: Whole Level (Wide Light Gray Bar)
+# Layer 1: Whole Level (Wide Light Gray Bar - The "Anchor")
     fig.add_trace(go.Bar(
-        y=[0.25], x=[row['Level_Max'] - x_min], base=x_min,
+        y=[0.23], x=[row['Level_Max'] - x_min], base=x_min,
         orientation='h', marker_color='#F0F0F0', hoverinfo='skip', 
-        width=0.3  # Reduced from 0.4
+        width=0.3
     ))
     
-    # Layer 2: Age Division (Inner Darker Gray Bar)
+    # Layer 2: Age Division (Inner Slate Blue Bar - Centered)
     fig.add_trace(go.Bar(
         y=[0.25], x=[row['Div_Max'] - x_min], base=x_min,
-        orientation='h', marker_color='#D0D0D0', hoverinfo='skip', 
-        width=0.15 # Reduced from 0.2
+        orientation='h', marker_color='#708090', hoverinfo='skip', 
+        width=0.15 
     ))
+
+    # --- FINAL CORRECTED LABELS ---
+    # Top label: Lined up with the top of the nested bars
+    fig.add_annotation(
+        x=x_min, y=0.42, 
+        text="Age Division", # The "Inner" specific pond
+        showarrow=False, 
+        font=dict(size=10, color="black", weight="bold"), 
+        xanchor="left"
+    )
+    
+    # Bottom label: Pinned to the very bottom as the foundation
+    fig.add_annotation(
+        x=x_min, y=0.08, 
+        text="Whole Level", # The "Big" pond foundation
+        showarrow=False, 
+        font=dict(size=10, color="black"), 
+        xanchor="left", yanchor="top"
+    )
 
     
     # Layer 3: The Score (Gold Star) - Text moved higher to y=0.5
