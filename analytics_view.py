@@ -20,18 +20,19 @@ def create_v2_context_chart(row, gymnast_name):
     x_max = 10.0
     
     fig = go.Figure()
+    
     # Layer 1: Whole Level (Wide Light Gray Bar)
     fig.add_trace(go.Bar(
-        y=[0.2], x=[row['Level_Max'] - x_min], base=x_min, # Lowered y to 0.2
+        y=[0.25], x=[row['Level_Max'] - x_min], base=x_min,
         orientation='h', marker_color='#F0F0F0', hoverinfo='skip', 
-        width=0.5 # The "Background" thickness
+        width=0.3  # Reduced from 0.4
     ))
     
     # Layer 2: Age Division (Inner Darker Gray Bar)
     fig.add_trace(go.Bar(
-        y=[0.2], x=[row['Div_Max'] - x_min], base=x_min, # Must match y exactly
+        y=[0.25], x=[row['Div_Max'] - x_min], base=x_min,
         orientation='h', marker_color='#D0D0D0', hoverinfo='skip', 
-        width=0.25 # This sits "inside" the wide bar
+        width=0.15 # Reduced from 0.2
     ))
 
     
