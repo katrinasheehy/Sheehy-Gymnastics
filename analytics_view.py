@@ -41,7 +41,7 @@ def create_v2_context_chart(row, gymnast_name):
     # Layer 4: Level Median (White Vertical Line)
     fig.add_trace(go.Scatter(
         x=[row['Level_Median']], y=["Score"], mode='markers',
-        marker=dict(symbol='line-ns-open', size=24, color='white', line=dict(width=3))
+        marker=dict(symbol='line-ns-open', size=24, color='white', line=dict(width=3)),
         text=[f"<b>{row['Level_Median']:.3f}</b>"], textposition="top center"
     ))
 
@@ -85,6 +85,6 @@ def show_athlete_history_v2(gymnast_name, selected_meet, theme_color):
         st.markdown(f"""
             <div style='margin-top:-15px; padding-top:10px; margin-bottom:15px; font-size:0.8rem; color:#888;'>
                 🏆 <b>Top {row['Percentile']:.1f}%</b> of {int(row['Count'])} Level {row['Level']}s | 
-                👨‍⚖️ <b>Judge Profile:</b> {profile_label} (JSI: {jsi_val:.2f} | IQR: {iqr_val:.2f})
+                 <b>Judge Profile:</b> {profile_label} (JSI: {jsi_val:.2f} | IQR: {iqr_val:.2f})
             </div>
         """, unsafe_allow_html=True)
