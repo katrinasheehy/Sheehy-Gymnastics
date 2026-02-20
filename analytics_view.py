@@ -46,16 +46,28 @@ def create_v2_context_chart(row, gymnast_name):
     ))
     
     # Layer 4: Level Median (White Vertical Line)
+    # Set size to 20 so it spans only the thickness of the Light Gray bar (0.3 width)
     fig.add_trace(go.Scatter(
         x=[row['Level_Median']], y=[0.25], mode='markers',
-        marker=dict(symbol='line-ns-open', size=26, color='white', line=dict(width=3)),
+        marker=dict(
+            symbol='line-ns-open', 
+            size=20,          # Reduced from 26 to fit the 0.3 bar width
+            color='white', 
+            line=dict(width=3)
+        ),
         hoverinfo='skip'
     ))
 
     # Bar Labels
-    fig.add_annotation(x=x_min, y=0.55, text="Age Division", showarrow=False, font=dict(size=10, color="#999"), xanchor="left")
-    fig.add_annotation(x=x_min, y=-0.05, text="Whole Level", showarrow=False, font=dict(size=10, color="#666"), xanchor="left")
-
+    
+    # Bar Labels
+    # Top label for the light gray bar
+    fig.add_annotation(x=x_min, y=0.48, text="Whole Level", showarrow=False, 
+                       font=dict(size=10, color="#999"), xanchor="left")
+    
+    # Bottom label aligned to the dark gray bar's bottom edge (0.25 - 0.075)
+    fig.add_annotation(x=x_min, y=0.175, text="Age Division", showarrow=False, 
+                       font=dict(size=10, color="#708090"), xanchor="left", yanchor="top")
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
         showlegend=False, margin=dict(l=0, r=5, t=40, b=30), height=140,
