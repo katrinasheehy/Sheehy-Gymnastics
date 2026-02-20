@@ -50,8 +50,8 @@ def create_v2_context_chart(row, gymnast_name):
     ))
 
     # Bar Labels
-    fig.add_annotation(x=x_min, y=0.55, text="Whole Level", showarrow=False, font=dict(size=10, color="#999"), xanchor="left")
-    fig.add_annotation(x=x_min, y=-0.05, text="Age Division", showarrow=False, font=dict(size=10, color="#666"), xanchor="left")
+    fig.add_annotation(x=x_min, y=0.55, text="Age Division", showarrow=False, font=dict(size=10, color="#999"), xanchor="left")
+    fig.add_annotation(x=x_min, y=-0.05, text="Whole Level", showarrow=False, font=dict(size=10, color="#666"), xanchor="left")
 
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
