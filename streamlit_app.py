@@ -1,36 +1,32 @@
+#version 2
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import os
-from analytics_view import show_athlete_history
+from analytics_view import show_athlete_history_v2
 
-# --- 1. Page Config ---
-st.set_page_config(page_title="Sheehy All-Around", layout="centered")
+st.set_page_config(page_title="Sheehy All-Around V2", layout="centered")
 
-# --- 2. Load Data ---
 @st.cache_data
 def load_data():
-    df = pd.read_csv("cleaned_gymnastics.csv")
+    df = pd.read_csv("v2_cleaned_gymnastics.csv")
     df['Date'] = pd.to_datetime(df['Date'])
     return df
 
 df = load_data()
 
-# --- 3. App-Wide CSS ---
+# Global CSS
 st.markdown("""
     <style>
     h1 { white-space: nowrap; font-size: 1.6rem !important; overflow: hidden; margin-bottom: 5px; }
     [data-testid="stTabSelectionData"] { display: none !important; }
     hr { display: none !important; }
     .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
-        font-size: 24px !important;
-        font-weight: bold;
+        font-size: 24px !important; font-weight: bold;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. The Master Gymnast Function ---
 def show_gymnast_tab(name, color, events):
     st.markdown(f"""
         <style>
@@ -47,10 +43,11 @@ def show_gymnast_tab(name, color, events):
     selected_meet = st.selectbox("📅 Select Meet", all_meets, index=0, key=f"nav_{name}")
     latest = subset[subset['Meet'] == selected_meet].iloc[-1]
     
+    # Top Metrics: Meet Rank
     aa_val = latest.get('AA', 0)
-    meet_rank = latest.get('Meet_Rank', '-')
-    meet_total = latest.get('Meet_Rank_Total', '-')
-    rank_display = f"{int(float(meet_rank))} / {int(float(meet_total))}" if str(meet_rank) != '-' else "-"
+    m_rank = latest.get('Meet_Rank', '-')
+    m_total = latest.get('Meet_Rank_Total', '-')
+    rank_display = f"{int(float(m_rank))} / {int(float(m_total))}" if str(m_rank) != '-' else "-"
 
     st.markdown(f"""
         <table style="width:100%; border:none; margin-top:10px;">
@@ -67,7 +64,7 @@ def show_gymnast_tab(name, color, events):
         </table>
     """, unsafe_allow_html=True)
 
-    # --- SCOREBOARD WITH PB HIGHLIGHT ---
+    # Score Table: Division Rank & PB Highlights
     current_year = latest['Date'].year
     year_data = subset[subset['Date'].dt.year == current_year]
     cols = list(events.keys()) + ["AA"]
@@ -76,7 +73,8 @@ def show_gymnast_tab(name, color, events):
     for c in cols:
         val = latest.get(c, 0)
         s_pb = year_data[c].max() if c in year_data.columns else 0
-        score_row.append(val) # Keep as float for comparison
+        score_row.append(val)
+        # Pull Division Rank: AA_Rank for the AA column
         r_val = latest.get(f"{c}_Rank" if c != "AA" else "AA_Rank", "-")
         rank_row.append(str(r_val).replace('.0', ''))
         pb_row.append(s_pb)
@@ -84,25 +82,22 @@ def show_gymnast_tab(name, color, events):
     table_df = pd.DataFrame([score_row, rank_row, pb_row], columns=cols, 
                             index=["Score", f"{latest.get('Division', 'Div')} Rank", "Season PB"])
 
-    # Highlighting Logic: Color the "Score" cell if it matches "Season PB"
     def highlight_pb(data):
         attr = f'background-color: {color}; color: white; font-weight: bold;'
         is_pb = data.loc['Score'] == data.loc['Season PB']
         return pd.DataFrame([[attr if is_pb[col] else '' for col in data.columns],
                              ['' for _ in data.columns],
-                             ['' for _ in data.columns]], 
-                            index=data.index, columns=data.columns)
+                             ['' for _ in data.columns]], index=data.index, columns=data.columns)
 
     st.dataframe(table_df.style.apply(highlight_pb, axis=None).format(subset=(["Score", "Season PB"], slice(None)), formatter="{:.3f}"), use_container_width=True)
 
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">🎯 Event Analysis</p>', unsafe_allow_html=True)
-    show_athlete_history(name, selected_meet, color)
+    show_athlete_history_v2(name, selected_meet, color)
 
-    # --- TREND CHART ---
+    # Trend Chart
     st.markdown(f'<p style="font-size:1.1rem; font-weight:bold; margin-top:20px;">📈 Season Progress</p>', unsafe_allow_html=True)
     is_boy = "Ansel" in name
     y_min, y_max, threshold = (47, 56, 52) if is_boy else (35, 40, 38)
-    
     chart_data = subset[subset['Date'].dt.month.between(1, 4)].sort_values('Date').copy()
     chart_data['Meet_ID'] = chart_data['Date'].dt.strftime('%Y-%m-%d') + " " + chart_data['Meet']
 
@@ -114,10 +109,7 @@ def show_gymnast_tab(name, color, events):
         fig.add_trace(go.Scatter(x=yr_sub['Meet_ID'], y=yr_sub['AA'], mode='lines+markers', line=dict(color=color, width=3), marker=dict(size=8, color=color), showlegend=False))
 
     fig.add_hline(y=threshold, line_dash="dash", line_color="rgba(0,0,0,0.2)", line_width=2)
-    stars = chart_data[chart_data['AA'] >= threshold]
-    if not stars.empty:
-        fig.add_trace(go.Scatter(x=stars['Meet_ID'], y=stars['AA'], mode='markers', marker=dict(symbol='star', size=14, color='gold', line=dict(color='black', width=1)), showlegend=False))
-
+    
     pb_indices = chart_data.groupby(chart_data['Date'].dt.year)['AA'].idxmax()
     for idx in pb_indices:
         p = chart_data.loc[idx]
@@ -125,7 +117,8 @@ def show_gymnast_tab(name, color, events):
 
     fig.update_layout(yaxis=dict(range=[y_min, y_max], dtick=1), xaxis=dict(tickangle=45, tickvals=chart_data['Meet_ID'], ticktext=chart_data['Meet']), height=480, margin=dict(b=110, t=10), dragmode=False, template="plotly_white", showlegend=False)
     st.plotly_chart(fig, use_container_width=True, config={'staticPlot': True})
-# --- 5. Main Execution ---
+
+# Main Content
 st.title("🤸 Sheehy All-Around")
 events_girls = {"VT": "Vault", "UB": "Bars", "BB": "Beam", "FX": "Floor"}
 events_boys = {"FX": "Floor", "PH": "Pommel", "SR": "Rings", "VT": "Vault", "PB": "P-Bars", "HB": "H-Bar"}
