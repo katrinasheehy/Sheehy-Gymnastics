@@ -128,32 +128,38 @@ with tab2: show_gymnast_tab("Azalea", "#9370DB", events_girls)
 with tab3: show_gymnast_tab("Ansel", "#008080", events_boys)
 
 
-# --- 6. Live Meet Entry (Saturday Wine Country) ---
+import os
+
+# --- Saturday Live Score Entry (Wine Country) ---
 with st.sidebar:
     st.markdown("---")
-    show_admin = st.checkbox("🔑 Enter Live Scores")
-
-if show_admin:
-    st.header("📝 Live Score Entry")
-    with st.form("live_entry"):
-        g_name = st.selectbox("Gymnast", ["Annabelle", "Azalea", "Ansel"])
-        m_event = st.selectbox("Event", ["VT", "UB", "BB", "FX", "PH", "SR", "PB", "HB"])
-        m_score = st.number_input("Score", min_value=0.0, max_value=10.0, step=0.025, format="%.3f")
+    # Using a checkbox to keep the sidebar clean when not in use
+    if st.checkbox("🔑 Enter Live Scores"):
+        st.info("Entering scores for the Wine Country Meet.")
         
-        pwd = st.text_input("Admin Password", type="password")
-        submit = st.form_submit_button("Submit Score")
-        
-        if submit and pwd == "bayshore": # You can change this simple password
-            new_data = pd.DataFrame([[pd.Timestamp.now(), g_name, m_event, m_score]], 
-                                    columns=["Timestamp", "Gymnast", "Event", "Score"])
+        with st.form("live_entry_form"):
+            gymnast = st.selectbox("Gymnast", ["Annabelle", "Azalea", "Ansel"])
+            event = st.selectbox("Event", ["VT", "UB", "BB", "FX", "PH", "SR", "PB", "HB"])
+            score = st.number_input("Score", min_value=0.0, max_value=10.0, step=0.025, format="%.3f")
             
-            # Save to a temporary live file
-            file_path = "live_scores.csv"
-            if not os.path.isfile(file_path):
-                new_data.to_csv(file_path, index=False)
-            else:
-                new_data.to_csv(file_path, mode='a', header=False, index=False)
+            # Simple password to prevent accidental clicks
+            pwd = st.text_input("Admin Password", type="password")
             
-            st.success(f"Score for {g_name} on {m_event} saved! Refresh to see in 'Live' mode.")
-
-# Optional: Add a 'Live' mode toggle to the top metrics to show these scores
+            if st.form_submit_button("Submit Score"):
+                if pwd == "bayshore":  # You can change this to any password you like
+                    # Prepare the data
+                    new_score = pd.DataFrame([[
+                        pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+                        gymnast, 
+                        event, 
+                        score,
+                        "Wine Country 2026"
+                    ]], columns=["Timestamp", "Gymnast", "Event", "Score", "Meet"])
+                    
+                    # Save to CSV (appends if file exists, creates if not)
+                    file_name = "live_scores.csv"
+                    new_score.to_csv(file_name, mode='a', header=not os.path.exists(file_name), index=False)
+                    
+                    st.success(f"Successfully saved {score} for {gymnast} on {event}!")
+                else:
+                    st.error("Incorrect password.")
