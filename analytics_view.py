@@ -14,42 +14,58 @@ def get_judge_profile(jsi, iqr):
         return "Textbook Judging" if iqr < 0.50 else "Average but Erratic"
 
 def create_v2_context_chart(row, gymnast_name):
+    # Scale markers: 7-10 for Boys, 8-10 for Girls
     is_boy = any(name in gymnast_name for name in ["Ansel"])
-    x_min, x_max = (7.0, 10.0) if is_boy else (8.5, 10.0)
+    x_min = 7.0 if is_boy else 8.0
+    x_max = 10.0
     
     fig = go.Figure()
     
     # Layer 1: LEVEL Range (Wide Light Gray Bar)
     fig.add_trace(go.Bar(
-        y=["Score"], x=[row['Level_Max'] - x_min], base=x_min,
-        orientation='h', marker_color='#F0F0F0', hoverinfo='skip', width=0.6
+        y=[0.25], x=[row['Level_Max'] - x_min], base=x_min,
+        orientation='h', marker_color='#F0F0F0', hoverinfo='skip', width=0.4
     ))
     
     # Layer 2: DIVISION Range (Inner Darker Gray Bar)
     fig.add_trace(go.Bar(
-        y=["Score"], x=[row['Div_Max'] - x_min], base=x_min,
-        orientation='h', marker_color='#D0D0D0', hoverinfo='skip', width=0.3
+        y=[0.25], x=[row['Div_Max'] - x_min], base=x_min,
+        orientation='h', marker_color='#D0D0D0', hoverinfo='skip', width=0.2
     ))
     
-    # Layer 3: The Score (Gold Star)
+    # Layer 3: The Score (Gold Star) - Text moved higher to y=0.5
     fig.add_trace(go.Scatter(
-        x=[row['Score']], y=["Score"], mode='markers+text',
+        x=[row['Score']], y=[0.25], mode='markers+text',
         marker=dict(symbol='star', size=20, color='gold', line=dict(width=1.5, color='black')),
-        text=[f"<b>{row['Score']:.3f}</b>"], textposition="top center"
+        text=[f"<b>{row['Score']:.3f}</b>"], 
+        textposition="top center",
+        textfont=dict(size=13)
     ))
     
     # Layer 4: Level Median (White Vertical Line)
     fig.add_trace(go.Scatter(
-        x=[row['Level_Median']], y=["Score"], mode='markers',
-        marker=dict(symbol='line-ns-open', size=24, color='white', line=dict(width=3)),
-        text=[f"<b>{row['Level_Median']:.3f}</b>"], textposition="top center"
+        x=[row['Level_Median']], y=[0.25], mode='markers',
+        marker=dict(symbol='line-ns-open', size=26, color='white', line=dict(width=3)),
+        hoverinfo='skip'
     ))
+
+    # Bar Labels
+    fig.add_annotation(x=x_min, y=0.55, text="Whole Level", showarrow=False, font=dict(size=10, color="#999"), xanchor="left")
+    fig.add_annotation(x=x_min, y=-0.05, text="Age Division", showarrow=False, font=dict(size=10, color="#666"), xanchor="left")
 
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        showlegend=False, margin=dict(l=0, r=0, t=30, b=25), height=110,
-        xaxis=dict(range=[x_min, x_max + 0.05], showgrid=False, tickmode='linear', tick0=x_min, dtick=0.5, side="bottom", tickfont=dict(size=10)),
-        yaxis=dict(showticklabels=False)
+        showlegend=False, margin=dict(l=0, r=5, t=40, b=30), height=140,
+        xaxis=dict(
+            range=[x_min, x_max + 0.05], 
+            showgrid=False, 
+            tickmode='linear', 
+            tick0=x_min, 
+            dtick=0.5, 
+            side="bottom", 
+            tickfont=dict(size=10)
+        ),
+        yaxis=dict(showticklabels=False, range=[-0.2, 0.8])
     )
     return fig
 
@@ -58,33 +74,34 @@ def show_athlete_history_v2(gymnast_name, selected_meet, theme_color):
         df_ctx = pd.read_csv("v2_session_context.csv")
         df_jsi = pd.read_csv("v2_judge_analytics.csv")
     except FileNotFoundError:
-        st.error("V2 Data files not found. Ensure v2_session_context.csv and v2_judge_analytics.csv exist.")
+        st.error("V2 Data files not found.")
         return
     
-    # Filter for the specific gymnast and meet
-    meet_rows = df_ctx[(df_ctx['Gymnast'].str.contains(gymnast_name.split()[0], case=False)) & (df_ctx['Meet'] == selected_meet)]
+    # Filter updated to EXCLUDE 'AA'
+    meet_rows = df_ctx[
+        (df_ctx['Gymnast'].str.contains(gymnast_name.split()[0], case=False)) & 
+        (df_ctx['Meet'] == selected_meet) & 
+        (df_ctx['Event'] != 'AA')
+    ]
     
     for _, row in meet_rows.iterrows():
-        # Look up JSI and IQR for this specific event
         jsi_match = df_jsi[(df_jsi['Meet'] == row['Meet']) & (df_jsi['Level'] == str(row['Level'])) & (df_jsi['Event'] == row['Event'])]
         
         if not jsi_match.empty:
-            jsi_val = jsi_match.iloc[0]['JSI_Standard']
-            iqr_val = jsi_match.iloc[0]['IQR']
+            jsi_val, iqr_val = jsi_match.iloc[0]['JSI_Standard'], jsi_match.iloc[0]['IQR']
             profile_label = get_judge_profile(jsi_val, iqr_val)
         else:
-            profile_label = "Pending Data"
-            jsi_val, iqr_val = 0, 0
+            profile_label, jsi_val, iqr_val = "Pending", 0, 0
 
         c1, c2 = st.columns([1, 6])
         with c1:
-            st.markdown(f"<div style='margin-top:40px; font-weight:bold; font-size:1rem;'>{row['Event']}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='margin-top:50px; font-weight:bold; font-size:1rem;'>{row['Event']}</div>", unsafe_allow_html=True)
         with c2:
             st.plotly_chart(create_v2_context_chart(row, gymnast_name), use_container_width=True, config={'staticPlot': True})
         
         st.markdown(f"""
-            <div style='margin-top:-15px; padding-top:10px; margin-bottom:15px; font-size:0.8rem; color:#888;'>
+            <div style='margin-top:-25px; padding-top:10px; margin-bottom:20px; font-size:0.85rem; color:#888;'>
                 🏆 <b>Top {row['Percentile']:.1f}%</b> of {int(row['Count'])} Level {row['Level']}s | 
-                 <b>Judge Profile:</b> {profile_label} (JSI: {jsi_val:.2f} | IQR: {iqr_val:.2f})
+                <b>Judge Profile:</b> {profile_label} (JSI: {jsi_val:.2f} | IQR: {iqr_val:.2f})
             </div>
         """, unsafe_allow_html=True)
