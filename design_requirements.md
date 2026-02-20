@@ -1,4 +1,4 @@
-# 📋 Sheehy All-Around - Design Requirements (v2.3)
+# 📋 Sheehy All-Around - Design Requirements (version 2)
 
 ## **1. Core Objective**
 A unified, family-centric dashboard to track and visualize gymnastics progress for Annabelle, Azalea, and Ansel. Normalizes data across Men's/Women's disciplines and provides context for scores.
@@ -12,74 +12,79 @@ A unified, family-centric dashboard to track and visualize gymnastics progress f
 | **Azalea** | Level 4 (W) | Purple (`#9370DB`) | VT, UB, BB, FX |
 | **Ansel** | Level 4 (M) | Teal (`#008080`) | FX, PH, SR, VT, PB, HB |
 
----
+# 🤸 Project Specification: Sheehy All-Around (Version 2.0)
 
-## **3. Data Pipeline & Storage**
-### **A. "Save & Scoop" Workflow**
-* **Input:** Manual HTML saves from MSO to `ansel_history/`.
-* **Processor:** `process_all_history.py` parses metadata and scores.
-
-### **B. Data Schema (`cleaned_gymnastics.csv`)**
-* **Core:** `Date`, `Gymnast`, `Meet`, `Session`, `Level`, `Division`.
-* **Overall Performance:** `Meet_Rank`, `Meet_Rank_Total`.
-* **Event Scores & Ranks:** * Scores: `VT`, `UB`, `BB`, `FX`, `PH`, `SR`, `PB`, `HB`, `AA`.
-    * **Ranks:** Each event must have a corresponding rank column (e.g., `VT_Rank`, `UB_Rank`, `AA_Rank`).
-* **Context (PLANNED):** `Session_Average`, `Session_Median`.
-
- ### **C. Session Context Pipeline (NEW)**
-* **Objective:** Collect EVERY athlete's score for sessions attended by the Sheehy kids in 2026.
-* **Input:** Automatically derived from `cleaned_gymnastics.csv` (2026 rows).
-* **Storage:** `session_raw_data.csv` (Full session table).
-* **Validation:** Script must confirm "Athletes Found" matches "Meet_Rank_Total" from the primary CSV.
----
-
-## **4. Feature Requirements**
-### **A. Dashboard UI**
-1. **Summary Header:** Rank Badge ("🏆 Rank: X / Y") and Session Info.
-2. **Score Cards:** 3-decimal display for specific gymnast events.
-3. **Trend Visualization:** Line chart of All-Around (AA) scores.
-
-### **B. Advanced Analytics**
-1. **Event Drill-Down:** View history/trend for a single event (e.g., "Just Beam").
-2. **Consistency Tracking:** Standard Deviation per event (Stable vs. Volatile).
-3. **Judge Consistency:** Compare score vs. Session Average (+/- Diff).
+This document outlines the architectural and design requirements for **Version 2.0** of the Sheehy Gymnastics Analytics App. V2 marks the transition from a standard result tracker to a high-fidelity performance analytics engine.
 
 ---
 
-## **5. Live Tracking Mode (Real-Time)**
-* **Objective:** Dynamic updates during a meet via a **Local Agent** script.
-* **Live Features:** Auto-refresh, Dynamic Rank, Projected Finish (e.g., "Needs 9.2 on Floor for PB").
+## 🏗️ 1. Data Architecture
+To support advanced analytics without sacrificing speed, V2 utilizes a **Normalized Data Structure** across two distinct files.
+
+### **File: `v2_session_context.csv`**
+* **Scope:** Level-wide (analyzing every athlete in that USAG Level within the meet PDF).
+* **New Primary Columns:**
+    * `Level_Rank`: Standing against the entire Level population.
+    * `Div_Median` / `Div_Max`: Score benchmarks for the specific Age Group.
+    * `Level_Median` / `Level_Max`: Score benchmarks for the entire Level (the "Big Pond").
+    * `Count`: Total number of athletes in the Level (e.g., "Out of 152").
+
+### **File: `v2_judge_analytics.csv`**
+* **Scope:** Behavioral metadata per Meet/Session/Event.
+* **Metrics:**
+    * `JSI_Standard`: Strictness measured against USAG National Success Markers.
+    * `IQR (Interquartile Range)`: A measure of judging consistency (Lower = More Consistent).
 
 ---
 
-## **6. Technical Constraints**
-* **Cloud Blocking:** MSO blocks Cloudflare. Requires local HTML saves or local agent.
-* **Deduplication:** Must keep "last" entry to allow data enrichment of existing meets.
+## 📈 2. Statistical Requirements
+
+### **Percentile Logic (Excel Standard)**
+V2 utilizes the **Inclusive Percentile** (`PERCENTRANK.INC`) to ensure rankings are intuitive for competitive sports.
+* **Formula:** `((Count - Level_Rank) / (Count - 1)) * 100`
+* **Success Metric:** A Rank **1** finish must always result in a **100.0%** standing.
+
+### **Judge Profile Matrix**
+The app must automatically synthesize `JSI` and `IQR` into human-readable behavioral labels for coaching context:
+
+| JSI (Mood) | IQR (Consistency) | Behavioral Label |
+| :--- | :--- | :--- |
+| **Strict** | **Consistent** | ⚖️ Fair but Tough |
+| **Strict** | **Erratic** | 🌪️ Strict & Unpredictable |
+| **Average** | **Consistent** | 📖 Textbook Judging |
+| **Loose** | **Consistent** | ☀️ Generous but Precise |
+| **Loose** | **Erratic** | 🎢 Generous but Erratic |
 
 ---
-Session Context Analytics Framework (v1.0)I. Core Analytical MetricsFor every event at every meet, the following metrics will be calculated to provide a 360-degree view of the performance:Metric 1: Session Median (The Anchor)Description: The middle value of all scores in the session/level.Purpose: Establishes the judge's baseline for the day. It accounts for "tight" vs. "loose" scoring.Metric 2: Session Max (The Ceiling)Description: The highest score awarded in that session/level.Purpose: Defines the upper limit of what the judge considered "perfection" for that specific group.Metric 3: Percentile Rank (The Magnitude)Description: The percentage of the field the child outscored (e.g., Top 10%).Purpose: Normalizes ranking across different session sizes (e.g., being 7th out of 152 is different than 7th out of 10).Metric 4: Judge Strictness Index (JSI) (The "Weather")Description: The numerical difference between the current session's median and the child’s season-long average median for that level.Purpose: Proves mathematically if the meet was "harder than usual."II. Data Hygiene & Exclusion RulesTo prevent "garbage in, garbage out" math, the following scores are excluded from group baselines:The "Scratch" Rule: All 0.0 or "DNS" scores are removed.The "Fall" Filter: Scores more than 2.5 Standard Deviations below the median are excluded. This removes "catastrophe" outliers (multiple falls/equipment failure) that don't reflect the judge's standard curve.The Self-Exclusion Rule: When calculating a baseline for your child, their own score is removed from the group to prevent "circular logic" in the comparison.III. The Meet Context Card (Visual Design)The card will use a Layered Horizontal Bullet Chart to visualize the child's place in the competitive world.Layer 1 (Background): A gray bar representing the score range (Min to Max) of the entire Level session.Layer 2 (Foreground): A colored, nested bar representing the range of the specific Age Division.Marker 1 (The Star): The child's score for that event.Marker 2 (The Line): The Division Median.Marker 3 (The Ghost Star): The child’s Personal Season Best for that event.Insight Text Generation"Ansel scored a 9.3. While this is lower than his last meet, he was in the Top 5% of this session of 152 athletes in Level 4D1, and the judge's median was 0.4 lower than average today."The Context Footer (Judge Strictness Index)Located at the bottom of the card to provide the final "verdict" on the scoring environment:Numeric: JSI: $-0.45$Descriptive: "Judge Mood: Significantly Stricter than Average"IV. Scope of AnalysisTotal Data Points: 655 rows across 9 PDF-harvested sessions (2026 Season).Discipline Handling: Parallel logic for Men’s (6 events) and Women’s (4 events).Groupings: Comparisons calculated at both the Session Level (150+ kids) and Division Level (Age-group specific).
 
+## 🎨 3. UI/UX & Visualization
 
-## Phase 2: Session Context Analytics
+### **Nested Context Charts**
+Context cards for individual events must now feature **Dual-Layer Range Bars**:
+1.  **Level Bar (Light Gray):** Represents the full score range for the Level.
+2.  **Division Bar (Dark Gray):** Nested inside the Level bar, representing the score range for the specific Age Group.
+3.  **Gold Star:** Represents the subject's score relative to both populations.
+4.  **Median Marker:** A white vertical line indicating the Level Median.
 
-### 1. Data Processing Logic
-- **Exclusion Rules:** - Filter all 0.0 (Scratches/DNS) from session and division baselines.
-    - Exclude "Catastrophe Outliers" (scores > 2.5 Standard Deviations below the median).
-- **Metric Definitions:**
-    - **Session Median/Max:** Calculated per Level across the entire session.
-    - **Division Median/Max:** Calculated per specific Age Group.
-    - **JSI (Judge Strictness Index):** `Current Session Median - Season Level Average Median`.
-    - **Percentile Rank:** `(Number of athletes outscored / Total active athletes in session) * 100`.
+### **Scoreboard Highlights**
+* **Personal Bests (PB):** Cells in the "Score" row must glow with the athlete's theme color if that score is the Season PB.
+* **Sticky Navigation:** Mobile users must have access to athlete tabs (Annabelle, Azalea, Ansel) at the top of the viewport at all times.
 
-### 2. UI/UX: Meet Context Cards
-- **Visuals:** Layered Bullet Charts (Plotly or Altair) displaying Session vs. Division ranges.
-- **Interactivity:**
-    - Dashboard event scores are clickable to trigger the Context Card modal.
-    - "Judge Weather" toggle on the Meet Overview page to show/hide JSI metrics.
-- **Dynamic Text:** Automated generation of the performance insight sentence.
-- 
-## **7. Active Bug & Data Debt Tracker**
-* [ ] **Data Cleanup - Ansel:** Recent imports missing Division/Session metadata.
-* [ ] **Data Cleanup - Mardi Gras Meet:** Girls' data missing ranks and session info.
-* [ ] **Missing Ranks:** Populate `[Event]_Rank` columns for all historical data.
-* [ ] **Blank Cells:** Ensure `fillna("")` is handled in the processor to prevent app crashes.
+---
+
+## 📑 4. USAG Benchmarks (2026 Reference)
+The following benchmarks are used as the "Zero Point" for calculating Judge Strictness:
+
+| Level | Vault | Bars | Beam/Rings | Floor |
+| :--- | :--- | :--- | :--- | :--- |
+| **Girls L3** | 9.20 | 8.80 | 8.70 | 9.00 |
+| **Girls L4** | 9.10 | 8.70 | 8.60 | 8.90 |
+| **Boys 4D1** | 9.20 | 8.50 | 8.40* | 8.80 |
+*\*Note: For Boys, the 8.4 benchmark applies to Rings, P-Bars, and High Bar.*
+
+---
+
+## 🚀 5. Deployment Strategy
+* **V1 (Stable):** Hosted on the `main` branch.
+* **V2 (Beta):** Hosted on the `version-2` branch for testing and live Saturday updates.
+* **Merge Policy:** V2 will be merged into Main only after a full multi-user testing cycle.
