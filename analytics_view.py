@@ -45,13 +45,15 @@ def create_v2_context_chart(row, gymnast_name):
         xanchor="left"
     )
     
-    # White label tucked just inside the bottom edge of the light gray bar
+  
+# white label placed in the gap between the bars and the x-axis numbers
     fig.add_annotation(
-        x=x_min + 0.05, y=0.12, 
+        x=x_min + 0.05, y=-0.08, 
         text="Whole Level", 
         showarrow=False, 
-        font=dict(size=9, color="white", weight="bold"), 
-        xanchor="left"
+        font=dict(size=9, color="white"), 
+        xanchor="left",
+        yanchor="top"
     )
 
     
