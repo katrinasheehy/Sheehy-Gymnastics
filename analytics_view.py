@@ -58,16 +58,26 @@ def create_v2_context_chart(row, gymnast_name):
         hoverinfo='skip'
     ))
 
-    # Bar Labels
+   
     
-    # Bar Labels
-    # Top label for the light gray bar
-    fig.add_annotation(x=x_min, y=0.48, text="Whole Level", showarrow=False, 
-                       font=dict(size=10, color="#999"), xanchor="left")
+   # Bar Labels
+    # Top label: Pinned to the top of the Whole Level bar
+    fig.add_annotation(
+        x=x_min, y=0.48, 
+        text="Whole Level", 
+        showarrow=False, 
+        font=dict(size=10, color="black"), # Changed to black
+        xanchor="left"
+    )
     
-    # Bottom label aligned to the dark gray bar's bottom edge (0.25 - 0.075)
-    fig.add_annotation(x=x_min, y=0.175, text="Age Division", showarrow=False, 
-                       font=dict(size=10, color="#708090"), xanchor="left", yanchor="top")
+    # Bottom label: Pinned to the bottom of the Age Division bar
+    fig.add_annotation(
+        x=x_min, y=0.175, 
+        text="Age Division", 
+        showarrow=False, 
+        font=dict(size=10, color="black", weight="bold"), # Changed to black + Bold
+        xanchor="left", yanchor="top"
+    )
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
         showlegend=False, margin=dict(l=0, r=5, t=40, b=30), height=140,
