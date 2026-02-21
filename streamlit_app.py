@@ -8,11 +8,11 @@ from analytics_view import show_athlete_history_v2
 st.set_page_config(page_title="Sheehy All-Around V2", layout="centered")
 
 # Check if live scores exist and display them
-if os.path.exists("live_scores.csv"):
-    st.markdown("### 🔴 Live Results (Saturday)")
-    live_df = pd.read_csv("live_scores.csv")
-    # Show only the last 3 entries to keep it compact
-    st.table(live_df.tail(3)[["Gymnast", "Event", "Score"]])
+#if os.path.exists("live_scores.csv"):
+#   st.markdown("### 🔴 Live Results (Saturday)")
+#    live_df = pd.read_csv("live_scores.csv")
+#    # Show only the last 3 entries to keep it compact
+#    st.table(live_df.tail(3)[["Gymnast", "Event", "Score"]])
 
 @st.cache_data
 def load_data():
