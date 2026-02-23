@@ -14,7 +14,8 @@ st.set_page_config(page_title="Sheehy All-Around V2", layout="centered")
 #    # Show only the last 3 entries to keep it compact
 #    st.table(live_df.tail(3)[["Gymnast", "Event", "Score"]])
 
-@st.cache_data
+# @st.cache_data  <-- Comment this out temporarily
+
 def load_data():
     df = pd.read_csv("v2_cleaned_gymnastics.csv")
     df['Date'] = pd.to_datetime(df['Date'])
